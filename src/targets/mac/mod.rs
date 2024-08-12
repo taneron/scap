@@ -38,7 +38,7 @@ pub fn get_all_targets() -> Vec<Target> {
 
     let content = SCShareableContent::current();
 
-    let primary_window_id = content.windows[0].window_id
+    let primary_window_id = content.windows[0].window_id;
 
 
     // Add displays to targets
@@ -76,7 +76,7 @@ pub fn get_all_targets() -> Vec<Target> {
     for application in content.applications {
 
         let id = primary_window_id;
-        let title = application.application_name.expect("Application name not found");
+        let title = application.application_name.clone().unwrap_or("Some Application".to_string());
         // let raw_handle: CGWindowID = id;
         let raw_handle: CGWindowID = primary_window_id;
 

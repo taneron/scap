@@ -101,6 +101,18 @@ pub fn create_capturer(options: &Options, tx: mpsc::Sender<Frame>) -> SCStream {
     let sc_shareable_content = SCShareableContent::current();
 
     let params = match target {
+        Target::Application(application) => {
+            // Get SCWindow from window id
+            let sc_window = sc_shareable_content
+                .windows
+                .into_iter()
+                .find(|sc_win| sc_win.window_id == application.id)
+                .unwrap();
+
+            // Return a DesktopIndependentWindow
+            // https://developer.apple.com/documentation/screencapturekit/sccontentfilter/3919804-init
+            InitParams::DesktopIndependentWindow(sc_window)
+        }
         Target::Window(window) => {
             // Get SCWindow from window id
             let sc_window = sc_shareable_content
