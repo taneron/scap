@@ -38,6 +38,9 @@ pub fn get_all_targets() -> Vec<Target> {
 
     let content = SCShareableContent::current();
 
+    let primary_window_id = content.windows[0].window_id
+
+
     // Add displays to targets
     for display in content.displays {
         let id: CGDirectDisplayID = display.display_id;
@@ -69,6 +72,25 @@ pub fn get_all_targets() -> Vec<Target> {
         }
     }
 
+    // Add applications to targets
+    for application in content.applications {
+
+        let id = primary_window_id;
+        let title = application.application_name.expect("Application name not found");
+        // let raw_handle: CGWindowID = id;
+        let raw_handle: CGWindowID = primary_window_id;
+
+        println!("Application: {:?}", application.application_name);
+        println!("Application: {:?}", application);
+
+        let target = Target::Application(super::Application {
+            id,
+            title,
+            raw_handle,
+        });
+        targets.push(target);
+    }
+
     targets
 }
 
@@ -96,6 +118,13 @@ pub fn get_scale_factor(target: &Target) -> f64 {
             let mode = display.raw_handle.display_mode().unwrap();
             (mode.pixel_width() / mode.width()) as f64
         }
+        Target::Application(application) => unsafe {
+            let cg_win_id = application.raw_handle;
+            let ns_app: id = NSApp();
+            let ns_window: id = msg_send![ns_app, windowWithWindowNumber: cg_win_id as NSUInteger];
+            let scale_factor: f64 = msg_send![ns_window, backingScaleFactor];
+            scale_factor
+        }
     }
 }
 
@@ -111,6 +140,13 @@ pub fn get_target_dimensions(target: &Target) -> (u64, u64) {
         Target::Display(display) => {
             let mode = display.raw_handle.display_mode().unwrap();
             (mode.width(), mode.height())
+        },
+        Target::Application(application) => unsafe {
+            let cg_win_id = application.raw_handle;
+            let ns_app: id = NSApp();
+            let ns_window: id = msg_send![ns_app, windowWithWindowNumber: cg_win_id as NSUInteger];
+            let frame: NSRect = msg_send![ns_window, frame];
+            (frame.size.width as u64, frame.size.height as u64)
         }
     }
 }

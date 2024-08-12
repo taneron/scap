@@ -30,11 +30,23 @@ pub struct Display {
     #[cfg(target_os = "macos")]
     pub raw_handle: core_graphics_helmer_fork::display::CGDisplay,
 }
+#[derive(Debug, Clone)]
+pub struct Application {
+    pub id: u32,
+    pub title: String,
+
+    #[cfg(target_os = "windows")]
+    pub raw_handle: windows::Win32::Foundation::HWND,
+
+    #[cfg(target_os = "macos")]
+    pub raw_handle: core_graphics_helmer_fork::window::CGWindowID,
+}
 
 #[derive(Debug, Clone)]
 pub enum Target {
     Window(Window),
     Display(Display),
+    Application(Application),
 }
 
 /// Returns a list of targets that can be captured
